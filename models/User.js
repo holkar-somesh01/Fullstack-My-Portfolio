@@ -7,4 +7,4 @@ const userSchema = new mongoose.Schema( {
     otp: { type: String},
 }, { timestamps: true } )
 
- module.exports= mongoose.model("user",userSchema)
+module.exports = mongoose.model("user", userSchema)  

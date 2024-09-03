@@ -5,7 +5,7 @@ const JWT = require("jsonwebtoken")
 const { checkEmpty } = require("../utils/cheackEmpty")
 
 exports.registerUser = asyncHandler(async( req, res ) => {
-    const pass=  await bcrypt.hash(req.body.password, 10 )
+    const pass =  await bcrypt.hash(req.body.password, 10 )
     await User.create({...req.body, password: pass })
     res.json({message:"User Register Success"})
 })
@@ -17,12 +17,12 @@ exports.loginUser = asyncHandler(async(req,res)=>{
         return res.status(401).json({message:"All Fields Required", error })
     }
     // Verify email
-    const result = User.findOne({email})
+    const result = await User.findOne({ email })
     if (!result) {
         return res.status(401).json({message:"Invalid Email"})
     }
-    // Verify pasword
-    const verify = await bcrypt.compare(password,result.password)
+    // Verify pasword    
+    const verify = await bcrypt.compare(password, result.password)
     if (!verify) {
         return res.status(401).json({message:"Invalid Password"})
     }
