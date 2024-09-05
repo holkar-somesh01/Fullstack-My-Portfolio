@@ -11,6 +11,7 @@ app.use(cookieParser())
 app.use(express.json())
 
 app.use("/api/auth", require("./routes/auth.routes"))
+app.use("/api/admin", require("./routes/admin.routes"))
 
 app.use("*", (req, res) => {
     res.status(404).json({ message: "Resours Not found" })
