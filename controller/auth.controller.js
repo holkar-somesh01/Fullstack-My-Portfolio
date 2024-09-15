@@ -29,7 +29,7 @@ exports.loginUser = asyncHandler(async(req,res)=>{
     // create Token
     const Token =  JWT.sign({ userId: result._id }, process.env.JWT_KEY, { expiresIn: "1d" })
     // send Cookie
-    res.cookie(Token,"user",{
+    res.cookie("user", Token,{
         httpOnly:true,
         maxAge: 1000 * 60 * 60 * 24
     })

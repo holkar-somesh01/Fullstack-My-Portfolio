@@ -2,6 +2,7 @@ const express = require("express")
 const mongoose = require("mongoose")
 const cookieParser = require("cookie-parser")
 const cors = require("cors")
+const { adminProtected } = require("./middleware/Protected")
 require("dotenv").config({ path: "./.env" })   // env File Path 
 
 const app = express()
@@ -11,7 +12,8 @@ app.use(cookieParser())
 app.use(express.json())
 
 app.use("/api/auth", require("./routes/auth.routes"))
-app.use("/api/admin", require("./routes/admin.routes"))
+app.use("/api/admin",adminProtected, require("./routes/admin.routes"))
+app.use("/api/project",adminProtected, require("./routes/project.routes"))
 
 app.use("*", (req, res) => {
     res.status(404).json({ message: "Resours Not found" })

@@ -9,3 +9,5 @@ const Storage = multer.diskStorage({
 })
 const upload = multer({ storage: Storage }).single("images")
 module.exports = upload
+
+// Fields === single and Array 
