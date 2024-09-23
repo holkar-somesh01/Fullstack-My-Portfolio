@@ -18,5 +18,10 @@ router
     .get("/fetch-caro", adminController.getAllCarousel)
     .put("/update-caro/:id", adminController.updateCarousel)
     .delete("/delete-caro/:id", adminController.deleteCarousel)
-
+    
+    // ADD Project
+    .get("/fetch-project",adminController.fetchProjects)
+    .post("/add-project",adminController.addProject)
+    .put("/update-project/:id",adminController.updateProject)
+    .delete("/delete-project/:id", adminController.deleteProject)
 module.exports = router

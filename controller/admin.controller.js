@@ -4,11 +4,9 @@ const Technology = require("../models/Technology")
 const Social = require("../models/Social")
 const Carousel = require("../models/Carousel")
 const cloudinary  = require("../utils/cloudinary.config")
-const upload = require("../utils/upload")
+const {upload, projectUpload} = require("../utils/upload")
 const path = require("path")
-const fs = require("fs")
-const { log } = require("console")
-
+const Projects = require("../models/Projects")
 
 // Technology
 exports.addTechnology = asyncHandler (async (req, res) => {
@@ -32,7 +30,6 @@ exports.deleteTechnology = asyncHandler (async (req, res) => {
     await  Technology.findByIdAndDelete(req.params.id)
     res.json({message:"Technology Delete Success"})
 })
-
 //   SOCIAL MEDIA
 exports.addSocial = asyncHandler(async (req, res) => {
     await Social.create(req.body)
@@ -52,7 +49,6 @@ exports.deleteSocial = asyncHandler(async (req, res) => {
     await Social.findByIdAndDelete(id)
     res.json({ message: "SocialMedia Deleted Success" })
 })
-
 // Carousel
 exports.getAllCarousel = asyncHandler(async (req, res) => {
     const result = await Carousel.find()
@@ -128,4 +124,101 @@ exports.deleteCarousel = asyncHandler(async (req, res) => {
     await cloudinary.uploader.destroy(path.basename(result.hero))
     await Carousel.findByIdAndDelete(id)
     res.json({ message: "Carousel Deleted Success" })
+})
+// ADD PROJECTS
+exports.addProject = asyncHandler(async (req, res) => {
+    projectUpload(req, res, async (err) => {
+        if (err) {
+            console.log(err);
+            return res.status(400).json({message:"Multer Error"})
+        }
+        // const {error,isError } = checkEmpty({title, shortdesc, desc, duration, learning, images})
+        if (
+            !req.files["images"]                  ||
+            !req.files["screenshots-Web-main"]    ||
+            !req.files["screenshots-Web-other"]   ||
+            !req.files["screenshots-Mobile-main"] ||
+            !req.files["screenshots-Mobile-other"]||
+            !req.files["sections-web-images"]     ||
+            !req.files["sections-mobile-images"]
+        ) {
+            return res.status(400).json({message:"All Images Required"})
+        }
+        let images = {}
+        for (const key in req.files) {
+            if (key === "screenshots-Web-other" || key === "screenshots-Mobile-other") {   
+                images[key] = []
+                req.files[key].forEach(async item => {
+                    const { secure_url } = await cloudinary.uploader.upload(item.path)
+                    images[key] = [...images[key],secure_url]
+                });
+            } else {
+                const { secure_url } = await cloudinary.uploader.upload(req.files[key][0].path)
+                images[key] = secure_url
+            }
+        }
+      console.log(images);
+      console.log(req.files);
+      console.log(req.body);
+         
+        await Projects.create({
+            title: req.body.title,
+            shortdesc: req.body.shortdesc,
+            desc:req.body.desc,
+            duration:req.body.duration,
+            learning: req.body.learning,
+            images:images.images,
+            live:req.body.live,
+            source:req.body.source,
+            isMobileApp: req.body.isMobileApp,
+            technologies: {
+                frontend:req.body.FrontEnd,
+                backend:req.body.BackEnd,
+                mobile:req.body.Mobile,
+                collabration:req.body.Collabration,
+                hoisting:req.body.Hoisting,
+            },
+            sections: {
+                web: [
+                    {
+                        title: req.body["sections-web-title"], 
+                        desc: req.body["sections-web-desc"], 
+                        images: images["sections-web-images"], 
+                    }
+                ],
+                mobile: [
+                    {
+                        title: req.body["sections-mobile-title"], 
+                        desc: req.body["sections-mobile-desc"], 
+                        images: images["sections-mobile-images"], 
+                    }
+                ],
+            },
+            screenshots: {  
+                    web: {
+                        main: images["screenshots-Web-main"],
+                        other: images["screenshots-Web-other"].map(item=> item)
+                    },
+                    mobile: {
+                        main:images["screenshots-Mobile-main"],
+                        other: images["screenshots-Mobile-other"] && images["screenshots-Mobile-other"].map(item=> item)
+                    }
+            },
+        })
+        res.json({ message: "Project Add Success...!" })
+    })
+})
+exports.fetchProjects = asyncHandler(async(req,res)=> {
+    const result = await Projects.find()
+    res.json({message:"Project Fetch Success...!", result})
+})
+exports.updateProject = asyncHandler(async (req, res) => {
+    const { id} = req.params
+    await Projects.findByIdAndUpdate(id, req.body)
+    res.json({message:"Project  Update Success...!"})
+})
+exports.deleteProject = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    await Projects.findByIdAndDelete(id)
+    res.json({message:"Project Delete Success...!"})
 })

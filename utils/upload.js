@@ -8,6 +8,14 @@ const Storage = multer.diskStorage({
     }
 })
 const upload = multer({ storage: Storage }).single("images")
-module.exports = upload
 
-// Fields === single and Array 
+const projectUpload = multer({  storage: Storage }).fields([
+    { name: "images", maxCount: 1 },
+    { name: "screenshots-Web-main", maxCount: 1 },
+    { name: "screenshots-Web-other", maxCount: 5 },
+    { name: "screenshots-Mobile-main", maxCount: 1 },
+    { name: "screenshots-Mobile-other", maxCount: 5 },
+    { name: "sections-web-images", maxCount: 1 },
+    { name: "sections-mobile-images", maxCount: 1 },
+])
+module.exports = {upload, projectUpload}
