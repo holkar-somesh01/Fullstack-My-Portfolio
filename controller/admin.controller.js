@@ -132,7 +132,6 @@ exports.addProject = asyncHandler(async (req, res) => {
             console.log(err);
             return res.status(400).json({message:"Multer Error"})
         }
-        // const {error,isError } = checkEmpty({title, shortdesc, desc, duration, learning, images})
         if (
             !req.files["images"]                  ||
             !req.files["screenshots-Web-main"]    ||
@@ -147,20 +146,20 @@ exports.addProject = asyncHandler(async (req, res) => {
         let images = {}
         for (const key in req.files) {
             if (key === "screenshots-Web-other" || key === "screenshots-Mobile-other") {   
-                images[key] = []
-                req.files[key].forEach(async item => {
-                    const { secure_url } = await cloudinary.uploader.upload(item.path)
-                    images[key] = [...images[key],secure_url]
-                });
+                if (!images[key]) {
+                    images[key] = []
+                } 
+                const uploadALLImages = []
+                for (const item of req.files[key]) {
+                    uploadALLImages.push(cloudinary.uploader.upload(item.path))
+                }
+                const allData = await Promise.all(uploadALLImages)
+                images[key] = allData.map(item=>item.secure_url)
             } else {
                 const { secure_url } = await cloudinary.uploader.upload(req.files[key][0].path)
                 images[key] = secure_url
             }
         }
-      console.log(images);
-      console.log(req.files);
-      console.log(req.body);
-         
         await Projects.create({
             title: req.body.title,
             shortdesc: req.body.shortdesc,
@@ -197,11 +196,11 @@ exports.addProject = asyncHandler(async (req, res) => {
             screenshots: {  
                     web: {
                         main: images["screenshots-Web-main"],
-                        other: images["screenshots-Web-other"].map(item=> item)
+                        other: images["screenshots-Web-other"]
                     },
                     mobile: {
                         main:images["screenshots-Mobile-main"],
-                        other: images["screenshots-Mobile-other"] && images["screenshots-Mobile-other"].map(item=> item)
+                        other: images["screenshots-Mobile-other"]
                     }
             },
         })
@@ -212,13 +211,26 @@ exports.fetchProjects = asyncHandler(async(req,res)=> {
     const result = await Projects.find()
     res.json({message:"Project Fetch Success...!", result})
 })
-exports.updateProject = asyncHandler(async (req, res) => {
-    const { id} = req.params
-    await Projects.findByIdAndUpdate(id, req.body)
-    res.json({message:"Project  Update Success...!"})
-})
 exports.deleteProject = asyncHandler(async (req, res) => {
     const { id } = req.params
+    const result = await Projects.findById(id)
+    const allImages = []
+    allImages.push(cloudinary.uploader.destroy(path.basename(result.images)))
+    for (const item of result.sections.web) {
+        allImages.push(cloudinary.uploader.destroy(path.basename(item.images)))
+    }
+    for (const item of result.sections.mobile) {
+        allImages.push(cloudinary.uploader.destroy(path.basename(item.images)))
+    }
+    allImages.push(cloudinary.uploader.destroy(path.basename(result.screenshots.web.main)))
+    allImages.push(cloudinary.uploader.destroy(path.basename(result.screenshots.mobile.main)))
+    for (const item of result.screenshots.web.other) {
+        allImages.push(cloudinary.uploader.destroy(path.basename(item)))
+    }
+    for (const item of result.screenshots.mobile.other) {
+        allImages.push(cloudinary.uploader.destroy(path.basename(item)))
+    }
+    await Promise.all(allImages)
     await Projects.findByIdAndDelete(id)
     res.json({message:"Project Delete Success...!"})
 })

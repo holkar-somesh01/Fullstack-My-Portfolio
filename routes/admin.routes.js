@@ -22,6 +22,5 @@ router
     // ADD Project
     .get("/fetch-project",adminController.fetchProjects)
     .post("/add-project",adminController.addProject)
-    .put("/update-project/:id",adminController.updateProject)
     .delete("/delete-project/:id", adminController.deleteProject)
 module.exports = router
