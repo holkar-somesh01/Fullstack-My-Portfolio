@@ -10,3 +10,8 @@ exports.getAllCarousel = asyncHandler(async (req, res) => {
     const result = await Carousel.find()
     res.status(200).json({ message: "blog fetch success", result })
 })
+exports.getProjectDetail = asyncHandler(async (req, res) => {
+    const {id }=req.params
+    const result = await Projects.findById(id)
+    res.status(200).json({ message: "Project Details Fetch success", result })
+})
