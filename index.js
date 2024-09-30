@@ -14,6 +14,7 @@ app.use(cors({
         : "https://fullstack-my-portfolio.onrender.com",
     credentials: true
 }))
+
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.static("dist"))
