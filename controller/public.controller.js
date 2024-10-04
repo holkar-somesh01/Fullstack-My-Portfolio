@@ -39,7 +39,7 @@ exports.AddEnqueryMessage = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Invalid Mobile" })
     }
     await sendEmail({
-        to: process.env.MY_EMAIL,
+        to: "someshwarsholkar22@gmail.com",
         message: `Company: ${company}, email: ${email}, mobile: ${mobile}, message: ${message}`,
         subject: `New Enquery From ${company}`
     })
